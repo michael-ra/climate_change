@@ -74,7 +74,7 @@ model.compile(opt, loss='mean_squared_error', metrics=['accuracy', tf.keras.metr
 model.summary()
 
 #GENERATOR
-def batch_generator(X, Y, batch_size):
+def batch_generator_sub_batch(X, Y, batch_size):
     indices = np.arange(len(inputTimeNP)) 
     batch = []
     xAll = []
@@ -105,10 +105,35 @@ def batch_generator(X, Y, batch_size):
             yAll = []
             xAllnp = []
             yAllnp = []
+            batch = []
             yield (tf.ragged.constant(yAllnpForSplit.astype('float32', copy=False)),tf.ragged.constant(yAllnpForSplit.astype('int', copy=False)))
+            
+#GENERATOR
+def batch_generator_main(X, Y, batch_size):
+    indices = np.arange(len(inputTimeNP)) 
+    batch = []
+    xAll = []
+    yAll = []
+    while True:
+        for i in indices:
+         if i < len(indices):
+          batch.append(i)
+          xIn = inputTimeNP[i]
+          yIn = np.array(listOfLabels[i])
+          xAll.append(xIn)
+          yAll.append(yIn)
+          if len(batch)==batch_size:
+            xAllnp = np.asarray(xAll, dtype=np.object)
+            yAllnp = np.asarray(yAll, dtype=np.object)
+            print(xAllnp.shape)
+            print(yAllnp.shape)
+            xAll = []
+            yAll = []
+            batch = []
+            yield (tf.convert_to_tensor(xAllnp.astype('float32')),tf.convert_to_tensor(yAllnp.astype('int')))
 
 #tf.executing_eagerly()
-model.fit(batch_generator(inputTimeNP, listOfLabels, 1), epochs=1)
+model.fit(batch_generator_main(inputTimeNP, listOfLabels, 1), epochs=1)
 #model.predict
 
 
