@@ -14,5 +14,25 @@ For more information see `http://www.aivcc.uos.de <http://www.aivcc.uos.de/wordp
 3 Methods and Scripts
 ---------------------
 
+3.1 Random Forest Regression
+To predict monthly forest fire counts per Modis tile do the following:
+
+For training and validation on ERA5 data run:
+```sh
+$ python preprocess_for_train.py
+$ python train_val_regressor.py --mode val
+```
+
+For predicting with CMIP projections run:
+
+```sh
+$ python preprocess_for_prediction.py
+$ python train_val_regressor.py --mode pred
+$ python rf_prediction.py
+$ python post_process_prediction.py
+```
+
+
+
 4 Results
 ---------

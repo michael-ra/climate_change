@@ -97,6 +97,7 @@ if mode == 'pred':
     print('Saving regressor...')
     filename = './data/models/'+regressor+'.sav'
     pickle.dump(regr, open(filename, 'wb'))
+    
 else:
     #make prediction 
     print('Predicting on test set...')
