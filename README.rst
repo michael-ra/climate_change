@@ -12,7 +12,7 @@ For more information see `http://www.aivcc.uos.de <http://www.aivcc.uos.de/wordp
 -------
 
 Data representation before clearning & aggregation:
-https://github.com/michael-ra/climate_change/blob/main/grouping.PNG
+![alt text](https://github.com/michael-ra/climate_change/blob/main/grouping.PNG?raw=true)
 
 3 Methods and Scripts
 ---------------------
