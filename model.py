@@ -1,6 +1,5 @@
-from google.colab import files
-uploaded_files = files.upload()
-
+from google.colab import drive
+drive.mount('/content/drive', force_remount=True)
 import pandas as pd
 climate_data_samp = pd.read_csv("/content/drive/MyDrive/fire_precip_temp.csv")
 
@@ -38,9 +37,8 @@ for df in listOfCoordsData:
 
 listOfCoordsData[:] = [df.drop(['BurnedCells'], axis=1) for df in listOfCoordsData]
 
-print(listOfCoordsData)
-
-
+#RESIZE
+import numpy as np
 import tensorflow as tf
 
 yIn = np.array(listOfLabels, dtype=object)
@@ -50,35 +48,74 @@ inputTimeNP = np.array(inputTimeNP, dtype=object)
 print(inputTimeNP.shape)
 print(yIn.shape)
 
+
+#MODEL
 import numpy as np
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
-
+import os
 
 model = tf.keras.Sequential([
-   tf.keras.layers.GRU(120, return_sequences=True, input_shape=(None,7)),
-   tf.keras.layers.GRU(80, return_sequences=True),
-   tf.keras.layers.GRU(20, return_sequences=True),
-   tf.keras.layers.GRU(30, return_sequences=True),
+   tf.keras.layers.GRU(1, return_sequences=True, input_shape=(None,7)),
+   tf.keras.layers.GRU(1, return_sequences=True),
    tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(1))
 ])
+opt = tf.keras.optimizers.Adam(
+    learning_rate=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True,
+    name='Adam'
+)
 
-model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy', tf.keras.metrics.MeanSquaredError()])
+model.compile(opt, loss='mean_squared_error', metrics=['accuracy', tf.keras.metrics.MeanSquaredError()])
 model.summary()
 
-#DO NOT USE-PER EXAMPLE TRAINING
-#input
-for index, elem in enumerate(inputTimeNP):
-        input = elem
-        yIn = np.array(listOfLabels[index])
-        o = input.shape
-        input = input.reshape(1,o[0],7)
-        print(input.shape)
-        print(yIn.shape)
-        yIn = yIn.reshape(1,o[0])
-        print(yIn.shape)
-        model.fit(x=input, y=yIn, epochs=5)
-        #conditional?, inCondV, inCondH)
+#GENERATOR
+def batch_generator(X, Y, batch_size):
+    indices = np.arange(len(inputTimeNP)) 
+    batch = []
+    xAll = []
+    yAll = []
+    while True:
+        np.random.shuffle(indices) 
+        for i in indices:
+          batch.append(i)
+          xIn = inputTimeNP[i]
+          yIn = np.array(listOfLabels[i])
+          xAll.append(xIn)
+          yAll.append(yIn)
+          if len(batch)==batch_size:
+            xAllnp = np.asarray(xAll, dtype=np.object)
+            yAllnp = np.asarray(yAll, dtype=np.object)
+            #print(xAllnp.shape)
+            xAllnpForSplit = np.array_split(xAllnp[0], 10)  #268/4=67 % 0 (!)<-------<
+            #print(xAllnpForSplit)
+            #print(yAllnp.shape)
+            yAllnpForSplit = np.array_split(xAllnp[0], 10)
+            #print(yAllnpForSplit)
+            xAllnpForSplit = np.asarray(xAllnpForSplit, dtype=np.object)
+            yAllnpForSplit = np.asarray(yAllnpForSplit, dtype=np.object)
+            print(xAllnpForSplit.shape)
+            print(yAllnpForSplit.shape)
+            #reset
+            xAll = []
+            yAll = []
+            xAllnp = []
+            yAllnp = []
+            yield (tf.ragged.constant(yAllnpForSplit.astype('float32', copy=False)),tf.ragged.constant(yAllnpForSplit.astype('int', copy=False)))
+
+#tf.executing_eagerly()
+model.fit(batch_generator(inputTimeNP, listOfLabels, 1), epochs=1)
+#model.predict
+
+
+#UNUSED
+           # o = xAll.shape
+           # xIn = xIn.reshape(1,o[0],7)
+           # print(input.shape)
+           # print(yIn.shape)
+           # yIn = yIn.reshape(1,o[0])
+          #  print(yIn.shape)
+         #   model.fit(x=input, y=yIn, epochs=5)
+          #, inCondV, inCondH)
