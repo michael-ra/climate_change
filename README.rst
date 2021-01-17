@@ -11,6 +11,9 @@ For more information see `http://www.aivcc.uos.de <http://www.aivcc.uos.de/wordp
 2 Data
 -------
 
+Data representation before clearning & aggregation:
+![alt text](https://github.com/michael-ra/climate_change/blob/main/grouping.PNG?raw=true)
+
 3 Methods and Scripts
 ---------------------
 
