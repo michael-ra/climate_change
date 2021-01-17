@@ -59,12 +59,14 @@ import tensorflow as tf
 import os
 
 model = tf.keras.Sequential([
-   tf.keras.layers.GRU(1, return_sequences=True, input_shape=(None,7)),
-   tf.keras.layers.GRU(1, return_sequences=True),
+   tf.keras.layers.GRU(24, return_sequences=True, input_shape=(None,7)),
+   tf.keras.layers.GRU(42, return_sequences=True),
+   tf.keras.layers.GRU(128, return_sequences=True),
+   tf.keras.layers.GRU(5, return_sequences=True),
    tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(1))
 ])
 opt = tf.keras.optimizers.Adam(
-    learning_rate=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True,
+    learning_rate=0.1, beta_1=0.85, beta_2=0.989, epsilon=1e-07, amsgrad=True,
     name='Adam'
 )
 
