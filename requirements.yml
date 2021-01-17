@@ -17,3 +17,4 @@ dependencies:
   - tensorflow>=2.0
   - jupyter
   - jupyterlab
+  # google-colab was used to train the RNN model.
