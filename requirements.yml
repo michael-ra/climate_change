@@ -1,0 +1,20 @@
+name: ai_climate_2021
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.7
+  - xarray
+  - netcdf4
+  - cftime
+  - dask
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - statsmodels
+  - matplotlib
+  - cartopy
+  - tensorflow>=2.0
+  - jupyter
+  - jupyterlab
+  # google-colab was used to train the RNN model.
