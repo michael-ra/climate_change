@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 counts_dat = pd.read_csv('./data/fire_precip_temp.csv')
 counts_array = counts_dat.to_numpy()
-counts_dat.sort_values('year')
-counts_dat.sort_values('month')
+counts_dat.sort_values(['month','year'],ascending=[True, True], inplace=True)
+counts_dat.sort_values(['v','h'],ascending=[True, True], inplace=True)
 year_vals=counts_dat['year'][:].to_numpy()
 burned_cells = counts_dat['BurnedCells'][:]
 land_cells = counts_dat['LandCells'][:]
@@ -34,7 +35,7 @@ p_std_past_month = []
 
 years=[]
 
-for i in range(1,shape[0]):
+for i in tqdm(range(1,shape[0])):
     if land_cells_array[i] > 10: 
         if not (np.isnan(burned_cells_array[i]) or np.isnan(precip_std[i]) or np.isnan(precip_mean[i]) or np.isnan(temp_std[i]) or np.isnan(temp_mean[i]) or np.isnan(precip_std[i-1]) or np.isnan(precip_mean[i-1]) or np.isnan(temp_std[i-1]) or np.isnan(temp_mean[i-1])):
             burned_cleaned.append(burned_cells_array[i])
@@ -48,7 +49,7 @@ for i in range(1,shape[0]):
             t_mean_past_month.append(temp_mean[i-1])
             t_std_past_month.append(temp_std[i-1])
             p_mean_past_month.append(precip_mean[i-1])
-            p_std_past_month.append(precip_mean[i-1])
+            p_std_past_month.append(precip_std[i-1])
             years.append(year_vals[i])
             
 ltc = np.zeros((17,len(v_values)))
@@ -59,12 +60,25 @@ ltc_h= ltc_dat['h'][:].to_numpy()
 n_pixels = ltc_dat['n_pixels'][:].to_numpy()
 ltcs = ltc_dat['lct'][:].to_numpy()
 ltc_count= len(n_pixels)
-for i in range(len(v_values)):
+for i in tqdm(range(len(v_values))):
     for j in range(ltc_count):
-        if (ltc_year[j]==years[i] and ltc_v[j]==v_values[i] and ltc_h[j] == h_values[i]):
-            for k in range(16):
-                if ltcs[j]== k+1:
-                    ltc[k,i]=n_pixels[j]
+        if years[i]==2000:
+            if (2001==ltc_year[j] and ltc_v[j]==v_values[i] and ltc_h[j] == h_values[i]):
+                for k in range(16):
+                    if ltcs[j]== k+1:
+                        ltc[k,i]=n_pixels[j]
+            
+        elif years[i]<=2017:
+            if (ltc_year[j]==years[i] and ltc_v[j]==v_values[i] and ltc_h[j] == h_values[i]):
+                for k in range(16):
+                    if ltcs[j]== k+1:
+                        ltc[k,i]=n_pixels[j]
+        else:
+            if (2017==ltc_year[j] and ltc_v[j]==v_values[i] and ltc_h[j] == h_values[i]):
+                for k in range(16):
+                    if ltcs[j]== k+1:
+                        ltc[k,i]=n_pixels[j]
+            
             
     
 
@@ -81,3 +95,4 @@ np.save('./data/t_std_past_month',np.array(t_std_past_month))
 np.save('./data/p_mean_past_month',np.array(p_mean_past_month))
 np.save('./data/p_std_past_month',np.array(p_std_past_month))
 np.save('./data/ltc',ltc)
+np.save('./data/years',years)

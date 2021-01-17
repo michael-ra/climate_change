@@ -12,10 +12,12 @@ import numpy as np
 #processing the arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--regressor", default='rf', help="choose a regressor, either random forest (rf), linear regression (lr), gradient boosting regressor (gbt)")
+parser.add_argument("--mode",default='val',help="either validation (val) or precidtion (pred) mode")
 args = parser.parse_args()
 regressor = args.regressor
+mode = args.mode
 
-input_dim = 21 #maybe more later
+input_dim = 25 
 
 #load data
 print('Loading data...')
@@ -32,6 +34,7 @@ p_m_past_month = np.load('./data/p_mean_past_month.npy')
 p_s_past_month = np.load('./data/p_std_past_month.npy')
 t_m_past_month = np.load('./data/t_mean_past_month.npy')
 t_s_past_month = np.load('./data/t_std_past_month.npy')
+years = np.load('./data/years.npy')
 ltc = np.load('./data/ltc.npy')
 
 fire_counts = np.load('./data/fire_counts.npy') #assuming dim n_pointsx1
@@ -40,28 +43,43 @@ n_points = len(fire_counts)
 X = np.zeros((n_points, input_dim))
 y = fire_counts
 
+
 for i in range(n_points):
     X[i,0] = precip_mean[i]
     X[i,1] = precip_std[i]
     X[i,2] = temp_mean[i]
     X[i,3] = temp_std[i]
     X[i,4] = land_cells[i]
+    kl = 0
     for j in range(16):
-        X[i,5+j]=ltc[j,i]
-    #X[i,21] = v_coord[i]
-    #X[i,22] = h_coord[i]
-    #X[i,5] = p_m_past_month[i]
-    #X[i,6] = p_s_past_month[i]
-    #X[i,5] = t_s_past_month[i]
-    #X[i,8] = t_s_past_month[i]
-    
 
-# X will have dim. #data points x input_dim, y #data_points
+        X[i,5+j]=ltc[j,i]
+
+    X[i,21] = p_m_past_month[i]
+    X[i,22] = p_s_past_month[i]
+    X[i,23] = t_m_past_month[i]
+    X[i,24] = t_s_past_month[i]
+
+
 print(n_points)
-#scaler = MinMaxScaler().fit(y)
-#y = scaler.transform(y.reshape(1,-1))
-#y = np.interp(y, (y.min(), y.max()), (0, 1))
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=5/20, random_state=42, shuffle=False)
+
+if mode == 'val':
+    X_train = []
+    X_test = []
+    y_train = []
+    y_test = []
+    for i in range(n_points):
+        if years[i]<2015:
+            X_train.append(X[i,:])
+            y_train.append(y[i])
+        else:
+            X_test.append(X[i,:])
+            y_test.append(y[i])
+
+else:
+    X_train = X
+    y_train = y
+    
 
 if regressor == 'rf':
     regr = RandomForestRegressor()
@@ -71,26 +89,31 @@ elif regressor == 'gbt':
     regr = GradientBoostingRegressor()
 
 print('Training Regressor...')
-scaler = MinMaxScaler().fit(X_train)
-X_train = scaler.transform(X_train)
-X_test = scaler.transform(X_test)
+
 regr.fit(X_train,y_train)
 
 #save regressor
-print('Saving regressor...')
-filename = './data/models/'+regressor+'.sav'
-pickle.dump(regr, open(filename, 'wb'))
-#save regressor features
-#if regressor == 'rf':
- #   np.save('./data/models/regressor_feats/feat_imp_'+regressor,regr.feature_importances_)
+if mode == 'pred':
+    print('Saving regressor...')
+    filename = './data/models/'+regressor+'.sav'
+    pickle.dump(regr, open(filename, 'wb'))
+else:
+    #make prediction 
+    print('Predicting on test set...')
+    prediction = regr.predict(X_test)
+    print(len(prediction))
+    #print scores
+    print('R^2 score is ', regr.score(X_test,y_test))
+    print('RMSE is ', np.sqrt(sklearn.metrics.mean_squared_error(prediction,y_test)))
 
-#make prediction 
-print('Predicting on test set...')
-prediction = regr.predict(X_test)
+    rmse=0
+    for i in range(len(y_test)):
+        if y_test[i]>0 or prediction[i]>0:
+            rmse+=  2*np.abs(prediction[i]-y_test[i])/(y_test[i]+prediction[i])
 
-#print scores
-print('R^2 score is ', regr.score(X_test,y_test))
-print('RMSE is ', np.sqrt(sklearn.metrics.mean_squared_error(prediction,y_test)))
+    rmse *=1/len(y)
+
+    print(rmse)
 
 
 
