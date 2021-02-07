@@ -1,23 +1,30 @@
-# climate_change
-#################################################
-AI for Climate - Forest Fire
-#################################################
+
+# AI for Climate - Forest Fires
+
 
 For more information see `http://www.aivcc.uos.de <http://www.aivcc.uos.de/wordpress/index.php/about/>`_.
 
-1 Motivation
--------------
+## Motivation
 
-2 Data
+<p align="center">
+  <img src="figures/motivation.jpg" />
+</p>
+
+## Data
 -------
 
 Data representation before clearning & aggregation:
-https://github.com/michael-ra/climate_change/blob/main/grouping.PNG?raw=true
+<p align="center">
+  <img src="figures/grouping.PNG" />
+</p>
 
-3 Methods and Scripts
+## Methods and Scripts
 ---------------------
 
-3.1 Random Forest Regression
+<p align="center">
+  <img src="figures/method.jpg" />
+</p>
+
 To predict monthly forest fire counts per Modis tile do the following:
 
 For training and validation on ERA5 data run:
@@ -37,5 +44,10 @@ $ python post_process_prediction.py
 
 
 
-4 Results
----------
+## Results
+
+
+
+<p align="center">
+  <img src="figures/result.jpg" />
+</p>
