@@ -13,9 +13,9 @@ For more information see `http://www.aivcc.uos.de <http://www.aivcc.uos.de/wordp
 ## Data
 -------
 
-Data representation before clearning & aggregation:
+
 <p align="center">
-  <img src="figures/grouping.PNG" />
+  <img src="figures/data.jpeg" />
 </p>
 
 ## Methods and Scripts
